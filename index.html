@@ -122,12 +122,16 @@
     <script src="characterIndex.js"></script>
     <script>
         async function clientsideLoad() {
-            const [yamlconfig, yamldata] = await Promise.all([
-                jQuery.get("config.yaml"),
-                jQuery.get("data.yaml"),
-            ]);
-            window.data = jsyaml.load(yamlconfig);
-            window.data.characters = jsyaml.load(yamldata);
+            try {
+              const [yamlconfig, yamldata] = await Promise.all([
+                  jQuery.get("config.yaml"),
+                  jQuery.get("data.yaml"),
+              ]);
+              window.data = jsyaml.load(yamlconfig);
+              window.data.characters = jsyaml.load(yamldata);
+            } catch(e) {
+              alert("YAML error: "+e);
+            }
 
             jQuery("#loading").remove();
             jQuery("body > header").show();

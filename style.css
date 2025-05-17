@@ -68,7 +68,7 @@ form#controls {
     margin-bottom: 12px;
 }
 
-#dpResults ul {
+#dpResults > ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
@@ -108,6 +108,35 @@ form#controls {
     font-size: 0.9em;
 
 }
+
+.character .fields {
+  list-style-type: none;
+  padding: 0;
+  margin: 4px 0 0;
+  font-size: 0.85em;
+}
+.character .fields .field {}
+.character .fields .field .fieldKey {
+  font-weight: 600;
+}
+.character .fields .field .fieldKey:after {
+  content: ": "
+}
+.character .fields .field .fieldValue {}
+
+
+.character .links {
+  display: block;
+  margin: 4px 0 0;
+  font-size: 0.85em;
+}
+.character .links a {
+  padding-right: 8px;
+  color: white;
+  text-decoration: underline;
+}
+
+
 .character .tags {
     display: block;
     font-size: 0.85em;

@@ -68,6 +68,9 @@ function makeTagReadable(tag) {
 	return tag.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); });
 }
 
+
+
+
 function CharacterTag(rawtag) {
 	this.tag = "";
 	this.book = 0;
@@ -123,14 +126,34 @@ CharacterTag.prototype.setRenderVisibleForBook = function(book){
 }
 
 
-
+function parseLinkFormat(linkraw, defaultTitle) {
+	defaultTitle = defaultTitle || "Link";
+	if (!linkraw) { return []; }
+	if (typeof linkraw === "string") {
+		return [{ url: linkraw, title: defaultTitle }];
+	}
+	if (linkraw.url) {
+		linkraw.title = linkraw.title || defaultTitle;
+		return [linkraw];
+	}
+	if (Array.isArray(linkraw)) {
+		for (let i=0; i<linkraw.length; i++) {
+			if (typeof linkraw[i] === "string") {
+				linkraw[i] = { url: linkraw[i] };
+			}
+			linkraw[i].title = linkraw[i].title || defaultTitle;
+		}
+	}
+	
+	return linkraw;
+}
 
 function Character(raw, options){
 	this.name = raw.name ? parseBlurb(raw.name) : parseBlurb("?");
 	this.book = raw.book ? raw.book : 1;
 	this.blurb = raw.blurb ? parseBlurb(raw.blurb) : parseBlurb("-");
 	this.imgurl = raw.imgurl ? raw.imgurl : null;
-	this.alias = raw.alias ? parseBlurb(raw.alias) : parseBlurb("");
+	this.alias = raw.alias ? parseBlurb(raw.alias) : parseBlurb("");	
 
 	this.options = jQuery.extend({}, {
 		onTagClick: function(){}
@@ -145,6 +168,22 @@ function Character(raw, options){
 			this._tags.push(new CharacterTag(taglist[i]));
 		}
 	}
+	
+	this.links = parseLinkFormat(raw.link);
+	
+	this.fields = raw;
+	delete this.fields.name;
+	delete this.fields.book;
+	delete this.fields.imgurl;
+	delete this.fields.alias;
+	delete this.fields.blurb;
+	delete this.fields.tags;	
+	delete this.fields.link;
+	
+	this.fieldsSearchString = "";
+	Object.keys(this.fields).forEach((key)=>{
+		this.fieldsSearchString += this.fields[key] + " ";
+	});
 }
 
 Character.prototype.getTagVolumes = function(){
@@ -174,11 +213,32 @@ Character.prototype.render = function(){
 		this.$alias = jQuery('<span class="alias">').appendTo($inner);
 		this.$blurb = jQuery('<span class="blurb">').appendTo($inner);
 		
+		this.$fields = jQuery('<ul class="fields">').appendTo($inner);
+		jQuery.each(this.fields, (key,val) => {
+			let $li = jQuery('<li class="field">').appendTo(this.$fields);
+			jQuery('<span class="fieldKey">')
+				.text(makeTagReadable(key))
+				.appendTo($li);
+			jQuery('<span class="fieldValue">')
+				.text(val)
+				.appendTo($li);
+				
+		});
+		
+		this.$links = jQuery('<span class="links">').appendTo($inner);
+		for (var i = 0; i < this.links.length; i++) {
+			let $a = jQuery('<a>').appendTo(this.$links)
+				.attr("href", this.links[i].url)
+				.attr("target", "_blank")
+				.text(this.links[i].title)
+				;
+		}
+		
 		this.$tags = jQuery('<span class="tags">').appendTo($inner);
 		for (var i = 0; i < this._tags.length; i++) {
 			this._tags[i].render(this.options.onTagClick).appendTo(this.$tags);
 		}
-
+		
 		this.setRenderByBook(1);
 	}
 	return this.$rendered;
@@ -196,6 +256,19 @@ Character.prototype.setRenderByBook = function(book){
 	for (var i = 0; i < this._tags.length; i++) {
 		this._tags[i].setRenderVisibleForBook(book);
 	}
+	
+	/*
+	this.$fields.empty();
+	jQuery.each(this.fields, (key,val) => {
+		let $li = jQuery('<li class="field">').appendTo(this.$fields);
+		jQuery('<span class="fieldKey">')
+			.text(makeTagReadable(key))
+			.appendTo($li);
+		jQuery('<span class="fieldValue">')
+			.text(renderParsedBlurbForBook(val, book))
+			.appendTo($li);	
+	});
+	*/
 }
 Character.prototype.getBlurb = function(book){
 	return renderParsedBlurbForBook(this.blurb, book);
@@ -224,7 +297,10 @@ Character.prototype.isTextFilter = function(filter, book){
 		return true;
 	} else if (data.searchInBlurb && this.getBlurb(book).toLowerCase().includes(filter)) {
 		return true
-	}
+	} else if (this.fieldsSearchString.includes(filter)) {
+		return true;
+	}	
+
 	return false;
 }
 Character.prototype.hasTag = function(tag, book){
