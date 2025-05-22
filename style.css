@@ -124,6 +124,13 @@ form#controls {
 }
 .character .fields .field .fieldValue {}
 
+.character .morebutton {
+	font-size: 0.8em;
+	cursor: pointer;
+	text-decoration: underline;
+	opacity: 0.8;
+}
+
 
 .character .links {
   display: block;

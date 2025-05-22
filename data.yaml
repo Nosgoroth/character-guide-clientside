@@ -45,11 +45,18 @@
   nameJp: プロット・アゴニスト
   nameNotes: n/a
   firstAppearance: v1ch1
-  dialogueQuirks: > 
-    Excited, @2: moody
+  dialogueQuirks: Excited, moody
   tags: _character, heroParty, darkChef@2
+  more:
+    motivationNotes: >
+      A huge amount of text that would be a problem if it were always visible.
+      Like I don't know, I wouldn't want this to show all the time, you know?
+    aboutTheMoreFold: >
+      It can only take extra fields. You can't shove the main blurb here, for example.
+      But as long as you make it an extra field, go ahead and put as much text as you want in here.
   imgurl: ./imageas/prott_agonist.jpg
   link:
+    # Links will appear inside the fold, along with any extra fields inside the "more" property.
     - https://the-heros-journey-explained.fakewebsite.com
     - { url: "https://google.com", title: "Profile in JP pub's site" }
     -
@@ -65,10 +72,15 @@
 - name: May Nheroinne
   tags: heroParty
   blurb: Prott's love interest.
+  link: https://google.com?q=how+to+write+girls
 
 - name: Arche Rivall
   tags: darkChef
   blurb: A brash guy that doesn't like to smile. A Dark Chef.
+  more:
+    motivationNotes: >
+      A huge amount of text that would be a problem if it were always visible.
+      Like I don't know, I wouldn't want this to show all the time, you know?
 
 - name: >
     Foile

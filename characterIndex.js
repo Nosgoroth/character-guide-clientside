@@ -171,14 +171,17 @@ function Character(raw, options){
 	
 	this.links = parseLinkFormat(raw.link);
 	
+	this.more = raw.more;
+	
 	this.fields = raw;
 	delete this.fields.name;
 	delete this.fields.book;
 	delete this.fields.imgurl;
 	delete this.fields.alias;
 	delete this.fields.blurb;
-	delete this.fields.tags;	
+	delete this.fields.tags;
 	delete this.fields.link;
+	delete this.fields.more;
 	
 	this.fieldsSearchString = "";
 	Object.keys(this.fields).forEach((key)=>{
@@ -213,26 +216,53 @@ Character.prototype.render = function(){
 		this.$alias = jQuery('<span class="alias">').appendTo($inner);
 		this.$blurb = jQuery('<span class="blurb">').appendTo($inner);
 		
-		this.$fields = jQuery('<ul class="fields">').appendTo($inner);
-		jQuery.each(this.fields, (key,val) => {
-			let $li = jQuery('<li class="field">').appendTo(this.$fields);
-			jQuery('<span class="fieldKey">')
-				.text(makeTagReadable(key))
-				.appendTo($li);
-			jQuery('<span class="fieldValue">')
-				.text(val)
-				.appendTo($li);
-				
-		});
-		
-		this.$links = jQuery('<span class="links">').appendTo($inner);
-		for (var i = 0; i < this.links.length; i++) {
-			let $a = jQuery('<a>').appendTo(this.$links)
-				.attr("href", this.links[i].url)
-				.attr("target", "_blank")
-				.text(this.links[i].title)
-				;
+		if (this.fields && Object.keys(this.fields).length) {
+			this.$fields = jQuery('<ul class="fields">')
+				.appendTo($inner);
+			jQuery.each(this.fields, (key,val) => {
+				let $li = jQuery('<li class="field">').appendTo(this.$fields);
+				jQuery('<span class="fieldKey">')
+					.text(makeTagReadable(key))
+					.appendTo($li);
+				jQuery('<span class="fieldValue">')
+					.text(val)
+					.appendTo($li);
+			});
 		}
+		
+		
+		if (this.links.length || (this.more && Object.keys(this.more).length)) {
+			this.$moreContainer = jQuery('<div class="moreContainer">')
+				.appendTo($inner);
+			this.$more = jQuery('<div class="more">').appendTo(this.$moreContainer);
+			
+			this.$morefields = jQuery('<ul class="fields">').appendTo(this.$more);
+			jQuery.each(this.more, (key,val) => {
+				let $li = jQuery('<li class="field">').appendTo(this.$morefields);
+				jQuery('<span class="fieldKey">')
+					.text(makeTagReadable(key))
+					.appendTo($li);
+				jQuery('<span class="fieldValue">')
+					.text(val)
+					.appendTo($li);
+			});
+			
+			this.$links = jQuery('<span class="links">').appendTo(this.$more);
+			for (var i = 0; i < this.links.length; i++) {
+				let $a = jQuery('<a>').appendTo(this.$links)
+					.attr("href", this.links[i].url)
+					.attr("target", "_blank")
+					.text(this.links[i].title)
+					;
+			}
+			
+			this.$moreButton = jQuery('<span class="morebutton">')
+				.click(() => { this.showHideMoreFields(); })
+				.appendTo(this.$moreContainer);
+			this.showHideMoreFields(false);
+		}
+		
+		
 		
 		this.$tags = jQuery('<span class="tags">').appendTo($inner);
 		for (var i = 0; i < this._tags.length; i++) {
@@ -242,6 +272,18 @@ Character.prototype.render = function(){
 		this.setRenderByBook(1);
 	}
 	return this.$rendered;
+}
+Character.prototype.showHideMoreFields = function(forceStatusVisible) {
+	if (typeof forceStatusVisible === "undefined") {
+		forceStatusVisible = !this.$more.is(":visible");
+	}
+	if (forceStatusVisible) {
+		this.$moreButton.text("Show less");
+		this.$more.slideDown('fast');
+	} else {
+		this.$moreButton.text("Show more");
+		this.$more.slideUp('fast');
+	}
 }
 Character.prototype.getRenderedElement = function(){
 	return this.render();
