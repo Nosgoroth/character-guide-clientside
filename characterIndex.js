@@ -162,11 +162,24 @@ function Character(raw, options){
 	this._tags = [];
 	var taglist = parseTagList(raw.tags);
 	taglist = taglist ? taglist : [];
-	taglist.unshift("volume"+this.book);
+	taglist.push("volume"+this.book);
 	if (taglist && Array.isArray(taglist)) {
 		for (var i = 0; i < taglist.length; i++) {
-			this._tags.push(new CharacterTag(taglist[i]));
+			let tag = taglist[i];
+			if (tag[0] === "_" && !this.category) {
+				//It's a category, so save it. Only save the first category.
+				this.category = tag;
+			}
+			this._tags.push(new CharacterTag(tag));
 		}
+	}
+	
+	
+	if (this.category && window.data.categories) {
+		this.categoryOptions = window.data.categories[this.category];
+	}
+	if (!this.categoryOptions) {
+		this.categoryOptions = {};
 	}
 	
 	this.links = parseLinkFormat(raw.link);
@@ -210,8 +223,18 @@ Character.prototype.toString = function(){
 }
 Character.prototype.render = function(){
 	if (!this.$rendered) {
+		
 		this.$rendered = jQuery('<li class="character">');
+		
+		if (this.categoryOptions.border) { // Border color?
+			this.$rendered.css("border-color", this.categoryOptions.border);
+		}
+		if (this.categoryOptions.bgcolor) { // Border color?
+			this.$rendered.css("background-color", this.categoryOptions.bgcolor);
+		}
+		
 		var $inner = jQuery('<span class="inner">').appendTo(this.$rendered);
+		
 		this.$name = jQuery('<span class="name">').appendTo($inner);
 		this.$alias = jQuery('<span class="alias">').appendTo($inner);
 		this.$blurb = jQuery('<span class="blurb">').appendTo($inner);

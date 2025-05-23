@@ -23,13 +23,27 @@ attribution: >
 
 
 
+# Category styling. Category tags must start with an underscore.
+categories:
+    _character:
+        border: "#B00"
+        bgcolor: "#433"
+    _location:
+        border: "#0B0"
+        bgcolor: "#343"
+    _term:
+        border: "#00D"
+        bgcolor: "#334"
+
+
+
 #A number or "auto"
 maxvolume: auto
 
 # A number, "max" or "store" 
 defaultVolume: store
 
-# all/latest    
+# all/latest
 defaultBookmode: all
 
 showBookmodeSelect: false

@@ -46,7 +46,12 @@
   nameNotes: n/a
   firstAppearance: v1ch1
   dialogueQuirks: Excited, moody
+  
+  # You can add a category tag (a tag starting with underscore)
+  # to apply the styles defined in config.yaml. Define your own
+  # categories there.
   tags: _character, heroParty, darkChef@2
+  
   more:
     motivationNotes: >
       A huge amount of text that would be a problem if it were always visible.
@@ -68,14 +73,22 @@
     The main character. A guy that does stuff and opposes the Dark Chefs.
     @2: He is actually the long lost brother of his archrival, Arche Rivall.
 
+- name: Royal Academy
+  tags: _location
+  blurb: The main hub and location in the series.
+  
+- name: Dark Chefs
+  nameJp: ダークシェフ
+  tags: _term, darkChef
+  blurb: The villain organization.
 
 - name: May Nheroinne
-  tags: heroParty
+  tags: _character, heroParty
   blurb: Prott's love interest.
   link: https://google.com?q=how+to+write+girls
 
 - name: Arche Rivall
-  tags: darkChef
+  tags: _character, darkChef
   blurb: A brash guy that doesn't like to smile. A Dark Chef.
   more:
     motivationNotes: >
@@ -86,12 +99,17 @@
     Foile
     @$3: Foilatore Excelsia (Foile)
   book: 2
-  tags: herosParty, excelsiaRoyalty@3
+  tags: _character, heroParty, excelsiaRoyalty@3
   blurb: >
     A nice guy that joins Prott on his journeys.
     @3: Actually a prince of the Kingdom of Excelsia
 
+- name: Kingdom of Excelsia
+  book: 3
+  tags: _location
+  blurb: The neighboring kingdom.
+
 - name: Curatore Excelsia
   book: 3
-  tags: excelsiaRoyalty, darkChef
+  tags: _character, excelsiaRoyalty, darkChef
   blurb: The king of the Kingdom of Excelsia. Secretly a Dark Chef.
