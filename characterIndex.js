@@ -357,10 +357,9 @@ Character.prototype.setRenderByBook = function(book){
 		const $x = jQuery(x);
 		const key = $x.attr("data-forkey");
 		const isMore = !!($x.attr("data-ismore") === "1");
-		const text = this.getFieldForBook(key, book, isMore);
+		const text = this.getField(key, book, isMore);
 		$x.text(text);
 	});
-	
 	
 	/*
 	this.$fields.empty();
@@ -376,12 +375,18 @@ Character.prototype.setRenderByBook = function(book){
 	*/
 }
 Character.prototype.getBlurb = function(book){
+	book = book ? book : this.book;
 	return renderParsedBlurbForBook(this.blurb, book);
 }
 Character.prototype.getName = function(book){
+	book = book ? book : this.book;
 	return renderParsedBlurbForBook(this.name, book);
 }
-Character.prototype.getFieldForBook = function(field, book, isMore){
+Character.prototype.getMoreField = function(field, book){
+	return this.getField(field, book, true);
+}
+Character.prototype.getField = function(field, book, isMore){
+	book = book ? book : this.book;
 	const text = isMore ? this.more[field] : this.fields[field];
 	return renderBlurbForBook(text, book);
 }
@@ -461,16 +466,15 @@ Character.prototype.tagsByBook = function(book){
 	return tags;
 }
 Character.prototype.toCsvExportObject = function(){
-	// use "this.fields"
 	return {
-		"Term (日本語)": this.fields.nameJp,
-		"Japanese reading": this.more.nameJpReading,
-		"Term (English)": this.getName(this.getBook()),
-		"Description (English)": this.getBlurb(this.getBook()),
+		"Term (日本語)": this.getField("nameJp"),
+		"Japanese reading": this.getMoreField("nameJpReading"),
+		"Term (English)": this.getName(),
+		"Description (English)": this.getBlurb(),
 		"Kind of term": this.getCategory(),
-		"LN First Appearance": this.more.lnFirst,
-		"Manga First Appearance": this.more.mangaFirst,
-		"Notes": this.more.notes,
+		"LN First Appearance": this.getMoreField("lnFirst"),
+		"Manga First Appearance": this.getMoreField("mangaFirst"),
+		"Notes": this.getMoreField("notes"),
 	};
 }
 
