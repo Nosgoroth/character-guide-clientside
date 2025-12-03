@@ -23,6 +23,7 @@
 #
 # The link attribute can take:
 #   A string of an url
+#   A string of an URL preceded by its link text (separated by the 'http' string)
 #   An object like { url: _, title: _ }
 #   An array of either strings or link objects
 #
@@ -65,6 +66,7 @@
   link:
     # Links will appear inside the fold, along with any extra fields inside the "more" property.
     - https://the-heros-journey-explained.fakewebsite.com
+	- Hero's Journey https://the-heros-journey-explained.fakewebsite.com
     - { url: "https://google.com", title: "Profile in JP pub's site" }
     -
       url: https://google.com

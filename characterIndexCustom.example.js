@@ -16,3 +16,13 @@ Character.prototype.toCsvExportObject = function(){
 		"Notes": this.fields.more?.notes,
 	};
 }
+
+/*
+FormController.prototype.csvExportPreprocessCharacters = function(characters){
+	//array of objects
+	characters.sort((a,b) => {
+		return a.getBook() - b.getBook();
+	});
+	return characters;
+}
+*/

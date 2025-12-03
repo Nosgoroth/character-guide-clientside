@@ -134,27 +134,26 @@ CharacterTag.prototype.getCategoryName = function(){
 
 
 
-
-
-
-
 function parseLinkFormat(linkraw, defaultTitle) {
 	defaultTitle = defaultTitle || "Link";
 	if (!linkraw) { return []; }
 	if (typeof linkraw === "string") {
-		return [{ url: linkraw, title: defaultTitle }];
+		let parts = linkraw.split("http");
+		if (parts.length === 1) {
+			parts = [linkraw, "://invalid.link"];
+		}
+		return [{ url: "http"+parts[1], title: parts[0] ? parts[0].trim() : defaultTitle }];
 	}
 	if (linkraw.url) {
 		linkraw.title = linkraw.title || defaultTitle;
 		return [linkraw];
 	}
 	if (Array.isArray(linkraw)) {
+		let out = [];
 		for (let i=0; i<linkraw.length; i++) {
-			if (typeof linkraw[i] === "string") {
-				linkraw[i] = { url: linkraw[i] };
-			}
-			linkraw[i].title = linkraw[i].title || defaultTitle;
+			out = out.concat(parseLinkFormat(linkraw[i], defaultTitle));
 		}
+		linkraw = out;
 	}
 	
 	return linkraw;
@@ -857,7 +856,11 @@ FormController.prototype.onCatModalNoneClick = function(e) {
 FormController.prototype.oncsvExportModalOpenClick = function(e) {
 	e.preventDefault(); e.stopPropagation();
 	
-	const data = app.chars.getAllCharacters().map(x => x.toCsvExportObject());
+	let characters = app.chars.getAllCharacters();
+	if (this.csvExportPreprocessCharacters) {
+		characters = this.csvExportPreprocessCharacters(characters);
+	}
+	const data = characters.map(x => x.toCsvExportObject());
 	const json2csvParser = new json2csv.Parser();
 	const csv = json2csvParser.parse(data);
 		
