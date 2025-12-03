@@ -161,6 +161,15 @@ form#controls {
   color: white;
   text-decoration: underline;
 }
+.character .links a:after {
+	content: "|";
+	text-decoration: none;
+	display: inline-block;
+	padding-left: 8px;
+}
+.character .links a:last-child:after {
+	content: "";
+}
 
 
 .character .tags {
