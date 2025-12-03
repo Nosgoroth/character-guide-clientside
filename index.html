@@ -83,15 +83,10 @@
                 <label for="filter">Filter:</label>
                 <input type="text" id="filter" placeholder="Enter text..."></select>
             </div>
-            <!--
-            <div class="form-group sort">
-                <label for="sort">Sort by</label>
-                <select id="sort">
-                    <option value="appearance" selected="selected">appearance</option>
-                    <option value="name">name</option>
-                </select>
-            </div>
-            -->
+			<div class="form-group categories">
+				<label for="filter">Categories:</label>
+				<button id="categories-modal-open">All categories</a>
+			</div>
         </form>
 
 
@@ -100,6 +95,24 @@
         </div>
         
     </div>
+	
+	<dialog id="categories-modal" closedby="any">
+		<div class="all-none">
+			<button id="categories-modal-all">All</button>
+			<button id="categories-modal-none">None</button>
+		</div>
+		<div id="categories-modal-items">
+			<span class="category-item">
+				<input type="checkbox" checked="checked" name="category-_character" id="category-_character" data-category="_character" />
+				<label for="category-_character">Character (dummy)</label>
+			</span>
+			<span class="category-item">
+				<input type="checkbox" checked="checked" name="category-_location" id="category-_location" data-category="_location" />
+				<label for="category-_location">Location (dummy)</label>
+			</span>
+		</div>
+		<button id="categories-modal-close">Close</button>
+	</dialog>
 
     <footer class="footer">
         <div class="container"></div>

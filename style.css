@@ -57,6 +57,24 @@ form#controls {
 }
 
 
+
+#categories-modal .all-none {
+	margin-bottom: 10px;
+}
+#categories-modal .category-item {
+	display: inline-block;
+	margin: 0 6px 6px 0;
+}
+#categories-modal .category-item .isolate {
+	display: inline-block;
+	margin-left: 2px;
+	text-decoration: none;
+	color: black;
+}
+
+
+
+
 #dpResults {
     margin: 18px 0 0;
 }

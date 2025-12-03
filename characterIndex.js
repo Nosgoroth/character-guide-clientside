@@ -427,6 +427,7 @@ function CharacterController() {
 	this.bookmode = "all";
 	this.book = 0;
 	this.filtertags = [];
+	this.invalidcategories = [];
 	this.isAll = true;
 
 	if (window.data.maxvolume === "auto") {
@@ -491,6 +492,9 @@ CharacterController.prototype.getAllCharacters = function(){
 CharacterController.prototype.setTags = function(tags){ //string array
 	this.filtertags = tags;
 }
+CharacterController.prototype.setInvalidCategories = function(notcats){ //string array
+	this.invalidcategories = notcats;
+}
 CharacterController.prototype.setTextFilter = function(filter){
 	this.textfilter = filter.toLowerCase();
 }
@@ -506,6 +510,10 @@ CharacterController.prototype.getValidCharacters = function(){
 			continue;
 		}
 		if (this.filtertags.length && !this._characters[i].hasTags(this.filtertags, this.book, this.isAll)) {
+			//console.log(this._characters[i].name, "doesn't have tags", this.filtertags, this.book);
+			continue;
+		}
+		if (this.invalidcategories.length && this._characters[i].hasTags(this.invalidcategories, this.book, false)) {
 			//console.log(this._characters[i].name, "doesn't have tags", this.filtertags, this.book);
 			continue;
 		}
@@ -548,6 +556,13 @@ function FormController(){
 	this.$filter = jQuery("#filter");
 	this.$bookmode = jQuery("#bookmode");
 	this.$result = jQuery("#dpResults");
+	
+	this.$catModal = jQuery("#categories-modal");
+	this.$catModalItems = jQuery("#categories-modal-items");
+	this.$catModalOpen = jQuery("#categories-modal-open");
+	this.$catModalClose = jQuery("#categories-modal-close");
+	this.$catModalAll = jQuery("#categories-modal-all");
+	this.$catModalNone = jQuery("#categories-modal-none");
 
 	app.chars.setBookmode(window.data.defaultBookmode);
 	this.$bookmode.val(app.chars.getBookmode());
@@ -555,6 +570,11 @@ function FormController(){
 	this.$filter.on('change keyup', this.onFilterChange.bind(this));
 	this.$bookmode.on('change', this.onBookmodeChange.bind(this)).parent().toggle(!!data.showBookmodeSelect);
 	this.$tags.chosen().on('change', this.onTagsChange.bind(this));
+	
+	this.$catModalOpen.on('click', this.onCatModalOpenClick.bind(this));
+	this.$catModalClose.on('click', this.onCatModalCloseClick.bind(this));
+	this.$catModalAll.on('click', this.onCatModalAllClick.bind(this));
+	this.$catModalNone.on('click', this.onCatModalNoneClick.bind(this));
 
 
 
@@ -565,6 +585,8 @@ function FormController(){
 	for (var i = 0; i < chars.length; i++) {
 		chars[i].render().appendTo($ul).hide();
 	}
+	
+	this.renderCategories();
 
 	this.$book.prop({
 		min: 1,
@@ -616,6 +638,7 @@ FormController.prototype.fillTags = function() {
 
 	var tagkeys = Object.keys(tags);
 	tagkeys.sort(function(b, a) { return tags[a] - tags[b] });
+	
 
 	for (var i = 0; i < tagkeys.length; i++) {
 		var tag = tagkeys[i], num = tags[tagkeys[i]];
@@ -657,7 +680,8 @@ FormController.prototype.selectTag = function(tagname) {
 }
 
 FormController.prototype.onTagsChange = function() {
-	app.chars.setTags(this.$tags.val());
+	const tags = this.$tags.val();
+	app.chars.setTags(tags);
 	this.onAnyChange();
 }
 
@@ -676,4 +700,105 @@ FormController.prototype.onAnyChange = function() {
 		this._selectedChars[i].getRenderedElement().show();
 
 	}
+	
+	this.updateCatModalButtonText();
+}
+
+
+FormController.prototype.updateCatModalButtonText = function() {
+	const $inputs = this.$catModalItems.find("input");
+	const numInputs = $inputs.length;
+	const $inputsChecked = $inputs.filter(":checked");
+	const numInputsChecked = $inputsChecked.length;
+	if (numInputs === numInputsChecked) {
+		this.$catModalOpen.text("All categories");
+	} else if (numInputs === numInputsChecked + 1) {
+		this.$catModalOpen.text("All but one category");
+	} else if (numInputsChecked === 1) {
+		const tag = $inputsChecked.val();
+		this.$catModalOpen.text("#"+tag);
+	} else if (numInputsChecked === 0) {
+		this.$catModalOpen.text("No categories!");
+	} else {
+		this.$catModalOpen.text(numInputsChecked+" categories");
+	}
+}
+
+FormController.prototype.onCategoryChange = function() {
+	const notcats = this.$catModalItems.find("input:not(:checked)").get().map(x => x.value);
+	app.chars.setInvalidCategories(notcats);
+	this.onAnyChange();
+}
+
+
+FormController.prototype.isolateTag = function(tagToIsolate) {
+	this.$catModalItems.find("input").each((i,x) => {
+		const $x = jQuery(x);
+		const val = $x.val();
+		$x.prop("checked", !!(val === tagToIsolate));
+	});
+	this.onCategoryChange();
+}
+
+FormController.prototype.renderCategories = function() {
+	
+	this.$catModalItems.empty();
+	
+	const tags = app.chars.getAllTags();
+	
+	let tagkeys = Object.keys(tags);
+	tagkeys = tagkeys.filter(x => (x[0] === "_"));
+	tagkeys.sort(function(b, a) { return tags[a] - tags[b] });
+	
+	for (var i = 0; i < tagkeys.length; i++) {
+		let tag = tagkeys[i];
+		const id = "categories-"+tag;
+		const $item = jQuery("<span>")
+			.addClass("category-item")
+			.appendTo(this.$catModalItems)
+			;
+		jQuery('<input type="checkbox">')
+			.attr("id", id)
+			.prop("checked", true)
+			.val(tag)
+			.on("change", this.onCategoryChange.bind(this))
+			.appendTo($item)
+			;
+		jQuery("<label>")
+			.attr("for", id)
+			.text(makeTagReadable(tag))
+			.appendTo($item)
+			;
+			jQuery('<a class="isolate">')
+			.attr("href", "#")
+			.text("(i)")
+			.on("click", e => {
+				e.preventDefault(); e.stopPropagation();
+				this.isolateTag(tag);
+			})
+			.appendTo($item)
+			;
+	}
+	
+	this.updateCatModalButtonText();
+}
+
+
+FormController.prototype.onCatModalOpenClick = function(e) {
+	e.preventDefault(); e.stopPropagation();
+	this.$catModal.get(0).showModal();
+}
+FormController.prototype.onCatModalCloseClick = function(e) {
+	e.preventDefault(); e.stopPropagation();
+	this.$catModal.get(0).close();
+}
+FormController.prototype.onCatModalAllClick = function(e) {
+	e.preventDefault(); e.stopPropagation();
+	this.$catModalItems.find("input").prop("checked", true);
+	this.onCategoryChange();
+}
+FormController.prototype.onCatModalNoneClick = function(e) {
+	e.preventDefault(); e.stopPropagation();
+	this.$catModalItems.find("input").prop("checked", false);
+	this.onCategoryChange();
 }
