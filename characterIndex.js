@@ -28,6 +28,7 @@ function parseTagList(taglist) {
 }
 
 function parseBlurb(blurb) {
+	if (!blurb) { return []; }
 	var bs = blurb.split("@");
 	var blurbs = {
 		0: bs[0].trim()
@@ -50,6 +51,7 @@ function renderBlurbForBook(blurb, book){
 	return renderParsedBlurbForBook(parseBlurb(blurb), book);
 }
 function renderParsedBlurbForBook(parsedBlurb, book){
+	if (!parsedBlurb) { parsedBlurb = []; }
 	if (!book) { return parsedBlurb[0] ? parsedBlurb[0] : ""; }
 	var subblurbs = [];
 	for (var i = 0; i < book+1; i++) {
@@ -195,8 +197,8 @@ function Character(raw, options){
 	
 	this.links = parseLinkFormat(raw.link);
 	
-	this.more = raw.more;
-	
+	this.more = raw.more ? raw.more : {};
+
 	this.fields = raw;
 	delete this.fields.name;
 	delete this.fields.book;
@@ -209,7 +211,14 @@ function Character(raw, options){
 	
 	this.fieldsSearchString = "";
 	Object.keys(this.fields).forEach((key)=>{
-		this.fieldsSearchString += this.fields[key] + " ";
+		if (typeof this.fields[key] === "string") {
+			this.fieldsSearchString += this.fields[key] + " ";
+		}
+	});
+	Object.keys(this.more).forEach((key)=>{
+		if (typeof this.more[key] === "string") {
+			this.fieldsSearchString += this.more[key] + " ";
+		}
 	});
 }
 
@@ -259,11 +268,14 @@ Character.prototype.render = function(){
 			this.$fields = jQuery('<ul class="fields">')
 				.appendTo($inner);
 			jQuery.each(this.fields, (key,val) => {
-				let $li = jQuery('<li class="field">').appendTo(this.$fields);
+				let $li = jQuery('<li class="field">')
+					.appendTo(this.$fields);
 				jQuery('<span class="fieldKey">')
 					.text(makeTagReadable(key))
 					.appendTo($li);
-				jQuery('<span class="fieldValue">')
+				jQuery('<span class="fieldValue fieldRootValue">')
+					.attr("data-forkey", key)
+					.attr("data-ismore", "0")
 					.text(val)
 					.appendTo($li);
 			});
@@ -281,7 +293,9 @@ Character.prototype.render = function(){
 				jQuery('<span class="fieldKey">')
 					.text(makeTagReadable(key))
 					.appendTo($li);
-				jQuery('<span class="fieldValue">')
+				jQuery('<span class="fieldValue fieldMoreValue">')
+					.attr("data-ismore", "1")
+					.attr("data-forkey", key)
 					.text(val)
 					.appendTo($li);
 			});
@@ -338,6 +352,16 @@ Character.prototype.setRenderByBook = function(book){
 		this._tags[i].setRenderVisibleForBook(book);
 	}
 	
+	
+	this.$rendered.find(".fieldValue").each((i,x) => {
+		const $x = jQuery(x);
+		const key = $x.attr("data-forkey");
+		const isMore = !!($x.attr("data-ismore") === "1");
+		const text = this.getFieldForBook(key, book, isMore);
+		$x.text(text);
+	});
+	
+	
 	/*
 	this.$fields.empty();
 	jQuery.each(this.fields, (key,val) => {
@@ -356,6 +380,10 @@ Character.prototype.getBlurb = function(book){
 }
 Character.prototype.getName = function(book){
 	return renderParsedBlurbForBook(this.name, book);
+}
+Character.prototype.getFieldForBook = function(field, book, isMore){
+	const text = isMore ? this.more[field] : this.fields[field];
+	return renderBlurbForBook(text, book);
 }
 Character.prototype.getAlias = function(book){
 	return renderParsedBlurbForBook(this.alias, book);
@@ -436,13 +464,13 @@ Character.prototype.toCsvExportObject = function(){
 	// use "this.fields"
 	return {
 		"Term (日本語)": this.fields.nameJp,
-		"Japanese reading": this.fields.more?.nameJpReading,
+		"Japanese reading": this.more.nameJpReading,
 		"Term (English)": this.getName(this.getBook()),
 		"Description (English)": this.getBlurb(this.getBook()),
 		"Kind of term": this.getCategory(),
-		"LN First Appearance": this.fields.more?.lnFirst,
-		"Manga First Appearance": this.fields.more?.mangaFirst,
-		"Notes": this.fields.more?.notes,
+		"LN First Appearance": this.more.lnFirst,
+		"Manga First Appearance": this.more.mangaFirst,
+		"Notes": this.more.notes,
 	};
 }
 
