@@ -124,6 +124,18 @@ CharacterTag.prototype.setRenderVisibleForBook = function(book){
 	if (!this.$rendered) { return; }
 	this.$rendered.toggle( this.isBook(book) );
 }
+CharacterTag.prototype.isCategory = function(){
+	return this.tag[0]==="_";
+}
+CharacterTag.prototype.getCategoryName = function(){
+	const tag = this.tag.slice(1);
+	return tag[0].toUpperCase()+tag.slice(1);
+}
+
+
+
+
+
 
 
 function parseLinkFormat(linkraw, defaultTitle) {
@@ -236,6 +248,11 @@ Character.prototype.render = function(){
 		var $inner = jQuery('<span class="inner">').appendTo(this.$rendered);
 		
 		this.$name = jQuery('<span class="name">').appendTo($inner);
+		if (this.imgurl) {
+			this.$img = jQuery('<img class="characterImage">')
+				.attr("src", this.imgurl)
+				.appendTo($inner);
+		}
 		this.$alias = jQuery('<span class="alias">').appendTo($inner);
 		this.$blurb = jQuery('<span class="blurb">').appendTo($inner);
 		
@@ -399,6 +416,13 @@ Character.prototype.hasTags = function(tags, book, isAll){
 Character.prototype.getAllTags = function(){
 	return this._tags;
 }
+Character.prototype.getCategory = function(){
+	try {
+		return this._tags.filter(x => x.isCategory())[0].getCategoryName();
+	} catch (e) {
+		return null;
+	}
+}
 Character.prototype.tagsByBook = function(book){
 	if (!this.isBook(book)) { return []; }
 	var tags = [];
@@ -409,6 +433,23 @@ Character.prototype.tagsByBook = function(book){
 	}
 	return tags;
 }
+Character.prototype.toCsvExportObject = function(){
+	// use "this.fields"
+	return {
+		"Term (日本語)": this.fields.nameJp,
+		"Japanese reading": this.fields.more?.nameJpReading,
+		"Term (English)": this.getName(this.getBook()),
+		"Description (English)": this.getBlurb(this.getBook()),
+		"Kind of term": this.getCategory(),
+		"LN First Appearance": this.fields.more?.lnFirst,
+		"Manga First Appearance": this.fields.more?.mangaFirst,
+		"Notes": this.fields.more?.notes,
+	};
+}
+
+
+
+
 
 
 
@@ -564,6 +605,11 @@ function FormController(){
 	this.$catModalAll = jQuery("#categories-modal-all");
 	this.$catModalNone = jQuery("#categories-modal-none");
 
+	this.$csvExportModal = jQuery("#csv-export-modal");
+	this.$csvExportModalOpen = jQuery("#csv-export-modal-open");
+	this.$csvExportModalClose = jQuery("#csv-export-modal-close");
+	this.$csvExportModalTextarea = jQuery("#csv-export-textarea");
+	
 	app.chars.setBookmode(window.data.defaultBookmode);
 	this.$bookmode.val(app.chars.getBookmode());
 
@@ -575,6 +621,9 @@ function FormController(){
 	this.$catModalClose.on('click', this.onCatModalCloseClick.bind(this));
 	this.$catModalAll.on('click', this.onCatModalAllClick.bind(this));
 	this.$catModalNone.on('click', this.onCatModalNoneClick.bind(this));
+	
+	this.$csvExportModalOpen.on('click', this.oncsvExportModalOpenClick.bind(this));
+	this.$csvExportModalClose.on('click', this.oncsvExportModalCloseClick.bind(this));
 
 
 
@@ -802,3 +851,22 @@ FormController.prototype.onCatModalNoneClick = function(e) {
 	this.$catModalItems.find("input").prop("checked", false);
 	this.onCategoryChange();
 }
+
+
+
+FormController.prototype.oncsvExportModalOpenClick = function(e) {
+	e.preventDefault(); e.stopPropagation();
+	
+	const data = app.chars.getAllCharacters().map(x => x.toCsvExportObject());
+	const json2csvParser = new json2csv.Parser();
+	const csv = json2csvParser.parse(data);
+		
+	this.$csvExportModalTextarea.text(csv);
+	//this.$csvExportModalTextarea.get(0).select();
+	this.$csvExportModal.get(0).showModal();
+}
+FormController.prototype.oncsvExportModalCloseClick = function(e) {
+	e.preventDefault(); e.stopPropagation();
+	this.$csvExportModal.get(0).close();
+}
+

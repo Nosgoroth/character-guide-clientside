@@ -84,8 +84,12 @@
                 <input type="text" id="filter" placeholder="Enter text..."></select>
             </div>
 			<div class="form-group categories">
-				<label for="filter">Categories:</label>
+				<label for="categories-modal-open">Categories:</label>
 				<button id="categories-modal-open">All categories</a>
+			</div>
+			<div class="form-group other">
+				<label>More:</label>
+				<button id="csv-export-modal-open">Export CSV</a>
 			</div>
         </form>
 
@@ -113,6 +117,15 @@
 		</div>
 		<button id="categories-modal-close">Close</button>
 	</dialog>
+	
+	
+	<dialog id="csv-export-modal" closedby="any">
+		<div class="all-none">
+			<textarea id="csv-export-textarea" cols="80" rows="10"></textarea>
+		</div>
+		<button id="csv-export-modal-close">Close</button>
+	</dialog>
+
 
     <footer class="footer">
         <div class="container"></div>
@@ -130,9 +143,11 @@
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/chosen/1.8.5/chosen.min.css" />
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/json2csv/5.0.7/json2csv.umd.min.js" integrity="sha512-Y/m9reebIxHNDYNSMG3VJwc6eFGM9dnUcIwELJcebO7YvZ9OEkOMTGAZnwGvnErU3aNNoby3yOobTXTseQ7S8A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="characterIndex.js"></script>
+	<script src="characterIndexCustom.js"></script>
     <script>
         async function clientsideLoad() {
             try {
