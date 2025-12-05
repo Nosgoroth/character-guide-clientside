@@ -170,6 +170,7 @@
 
                 jQuery.prototype.textOriginal = jQuery.prototype.text;
                 jQuery.prototype.text = function(str){
+                    if (!str) { str = ""; }
                     try {
                         return this.html(window._md.renderInline(str));
                     } catch(e) {
