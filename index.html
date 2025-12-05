@@ -167,8 +167,15 @@
 
             try {
                 window._md = markdownit({ xhtmlOut: true });
+
+                jQuery.prototype.textOriginal = jQuery.prototype.text;
                 jQuery.prototype.text = function(str){
-                    return this.html(window._md.renderInline(str));
+                    try {
+                        return this.html(window._md.renderInline(str));
+                    } catch(e) {
+                        console.warn("Couldn't render markdown:", str, e);
+                        return this.textOriginal(str);
+                    }
                 }
             } catch(e) {
                 // pass
