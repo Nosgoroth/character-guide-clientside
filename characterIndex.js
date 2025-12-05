@@ -28,7 +28,6 @@ function parseTagList(taglist) {
 }
 
 function parseBlurb(blurb) {
-	if (!blurb) { return []; }
 	var bs = blurb.split("@");
 	var blurbs = {
 		0: bs[0].trim()
@@ -51,7 +50,6 @@ function renderBlurbForBook(blurb, book){
 	return renderParsedBlurbForBook(parseBlurb(blurb), book);
 }
 function renderParsedBlurbForBook(parsedBlurb, book){
-	if (!parsedBlurb) { parsedBlurb = []; }
 	if (!book) { return parsedBlurb[0] ? parsedBlurb[0] : ""; }
 	var subblurbs = [];
 	for (var i = 0; i < book+1; i++) {
@@ -197,8 +195,8 @@ function Character(raw, options){
 	
 	this.links = parseLinkFormat(raw.link);
 	
-	this.more = raw.more ? raw.more : {};
-
+	this.more = raw.more;
+	
 	this.fields = raw;
 	delete this.fields.name;
 	delete this.fields.book;
@@ -211,14 +209,7 @@ function Character(raw, options){
 	
 	this.fieldsSearchString = "";
 	Object.keys(this.fields).forEach((key)=>{
-		if (typeof this.fields[key] === "string") {
-			this.fieldsSearchString += this.fields[key] + " ";
-		}
-	});
-	Object.keys(this.more).forEach((key)=>{
-		if (typeof this.more[key] === "string") {
-			this.fieldsSearchString += this.more[key] + " ";
-		}
+		this.fieldsSearchString += this.fields[key] + " ";
 	});
 }
 
@@ -257,9 +248,11 @@ Character.prototype.render = function(){
 		
 		this.$name = jQuery('<span class="name">').appendTo($inner);
 		if (this.imgurl) {
+			const $imgContainer = jQuery('<div class="characterImageContainer">')
+				.appendTo($inner);
 			this.$img = jQuery('<img class="characterImage">')
 				.attr("src", this.imgurl)
-				.appendTo($inner);
+				.appendTo($imgContainer);
 		}
 		this.$alias = jQuery('<span class="alias">').appendTo($inner);
 		this.$blurb = jQuery('<span class="blurb">').appendTo($inner);
@@ -274,8 +267,8 @@ Character.prototype.render = function(){
 					.text(makeTagReadable(key))
 					.appendTo($li);
 				jQuery('<span class="fieldValue fieldRootValue">')
-					.attr("data-forkey", key)
-					.attr("data-ismore", "0")
+					.attr("data-forKey", key)
+					.attr("data-isMore", "0")
 					.text(val)
 					.appendTo($li);
 			});
@@ -294,8 +287,8 @@ Character.prototype.render = function(){
 					.text(makeTagReadable(key))
 					.appendTo($li);
 				jQuery('<span class="fieldValue fieldMoreValue">')
-					.attr("data-ismore", "1")
-					.attr("data-forkey", key)
+					.attr("data-isMore", "1")
+					.attr("data-forKey", key)
 					.text(val)
 					.appendTo($li);
 			});
@@ -352,14 +345,13 @@ Character.prototype.setRenderByBook = function(book){
 		this._tags[i].setRenderVisibleForBook(book);
 	}
 	
-	
-	this.$rendered.find(".fieldValue").each((i,x) => {
+	this.$rendered.find("fieldValue").each((i,x) => {
 		const $x = jQuery(x);
-		const key = $x.attr("data-forkey");
-		const isMore = !!($x.attr("data-ismore") === "1");
-		const text = this.getField(key, book, isMore);
+		const key = $x.data("data-forKey");
+		const isMore = !!($x.data("data-isMore") === 1);
+		const text = this.getFieldForBook(key, book, isMore);
 		$x.text(text);
-	});
+	})
 	
 	/*
 	this.$fields.empty();
@@ -375,20 +367,13 @@ Character.prototype.setRenderByBook = function(book){
 	*/
 }
 Character.prototype.getBlurb = function(book){
-	book = book ? book : this.book;
 	return renderParsedBlurbForBook(this.blurb, book);
 }
 Character.prototype.getName = function(book){
-	book = book ? book : this.book;
 	return renderParsedBlurbForBook(this.name, book);
 }
-Character.prototype.getMoreField = function(field, book){
-	return this.getField(field, book, true);
-}
-Character.prototype.getField = function(field, book, isMore){
-	book = book ? book : this.book;
-	const text = isMore ? this.more[field] : this.fields[field];
-	return renderBlurbForBook(text, book);
+Character.prototype.getFieldForBook = function(field, book, isMore){
+	return renderParsedBlurbForBook(isMore ? this.fields.more[field] : this.fields[field], book);
 }
 Character.prototype.getAlias = function(book){
 	return renderParsedBlurbForBook(this.alias, book);
@@ -466,15 +451,16 @@ Character.prototype.tagsByBook = function(book){
 	return tags;
 }
 Character.prototype.toCsvExportObject = function(){
+	// use "this.fields"
 	return {
-		"Term (日本語)": this.getField("nameJp"),
-		"Japanese reading": this.getMoreField("nameJpReading"),
-		"Term (English)": this.getName(),
-		"Description (English)": this.getBlurb(),
+		"Term (日本語)": this.fields.nameJp,
+		"Japanese reading": this.fields.more?.nameJpReading,
+		"Term (English)": this.getName(this.getBook()),
+		"Description (English)": this.getBlurb(this.getBook()),
 		"Kind of term": this.getCategory(),
-		"LN First Appearance": this.getMoreField("lnFirst"),
-		"Manga First Appearance": this.getMoreField("mangaFirst"),
-		"Notes": this.getMoreField("notes"),
+		"LN First Appearance": this.fields.more?.lnFirst,
+		"Manga First Appearance": this.fields.more?.mangaFirst,
+		"Notes": this.fields.more?.notes,
 	};
 }
 
@@ -851,7 +837,7 @@ FormController.prototype.renderCategories = function() {
 			;
 			jQuery('<a class="isolate">')
 			.attr("href", "#")
-			.text("(i)")
+			.text("🎯")
 			.on("click", e => {
 				e.preventDefault(); e.stopPropagation();
 				this.isolateTag(tag);

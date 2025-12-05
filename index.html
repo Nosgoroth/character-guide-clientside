@@ -144,10 +144,14 @@
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha512-CSBhVREyzHAjAFfBlIBakjoRUKp5h7VSweP0InR/pAJyptH7peuhCsqAI/snV+TwZmXZqoUklpXp6R6wMnYf5Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/json2csv/5.0.7/json2csv.umd.min.js" integrity="sha512-Y/m9reebIxHNDYNSMG3VJwc6eFGM9dnUcIwELJcebO7YvZ9OEkOMTGAZnwGvnErU3aNNoby3yOobTXTseQ7S8A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14/dist/markdown-it.min.js" integrity="sha256-OMcKHnypGrQOLZ5uYBKYUacX7Rx9Ssu91Bv5UDeRz2g=" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script src="characterIndex.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="styleCustom.css" />
 	<script src="characterIndexCustom.js"></script>
+    
     <script>
         async function clientsideLoad() {
             try {
@@ -159,6 +163,15 @@
               window.data.characters = jsyaml.load(yamldata);
             } catch(e) {
               alert("YAML error: "+e);
+            }
+
+            try {
+                window._md = markdownit({ xhtmlOut: true });
+                jQuery.prototype.text = function(str){
+                    return this.html(window._md.renderInline(str));
+                }
+            } catch(e) {
+                // pass
             }
 
             jQuery("#loading").remove();
